@@ -2,38 +2,36 @@
 
 int btn;
 int lastbtn;
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 500; // Adjust debounce delay as needed
 
 void setup() {
     setMotors();
-
-    pinMode(OX, INPUT_PULLUP);
-    pinMode(OY, INPUT_PULLUP);
-    pinMode(BTN, INPUT_PULLUP);
-
     setupLed();
     
+    attachInterrupt(digitalPinToInterrupt(BTN), buttonInterrupt, CHANGE);
     Serial.begin(115200);
 }
 
-void loop() {  
-    
+void buttonInterrupt() {
+    if (millis() - lastDebounceTime >= debounceDelay) {
+        if (drawState == 2)
+            drawState = 0;
+        else 
+            drawState += 1;
+        origine = 0;
+        lastDebounceTime = millis();
+    }
+}
+
+void loop() {
+
     Serial.print("x = ");
     Serial.println(x);
     Serial.print("y = ");
     Serial.println(y);
     Serial.println();
     
-    btn = !digitalRead(BTN);
-    if (btn == 1) {
-        if (drawState == 2)
-            drawState = 0;
-        else 
-            drawState += 1;
-        origine = 0;
-        Serial.println(drawState);
-        delay(500);
-    }
-
     switch(drawState) {
         case 0:
             joystick();
